@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-template
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 10%
+      maxUnavailable: 10%
+  selector:
+    matchLabels:
+      app: app-template
+  template:
+    metadata:
+      labels:
+        app: app-template
+    spec:
+      containers:
+      - image: nginx:1.16
+        name: nginx-template
+        env:
+        - name: somename
+          value: somevalue
+        - name: secret-template
+          valueFrom:
+            secretKeyRef:
+              name: mysecret
+              key: mysec
+        - name: onemoresecret
+          valueFrom:
+            secretKeyRef:
+              name: secret-template2
+              key: mesecret
+        ports:
+        - containerPort: 80
+        readinessProbe:
+          failureThreshold: 5
+          successThreshold: 1
+          periodSeconds: 3
+          timeoutSeconds: 1
+          httpGet:
+            path: /
+            port: 80
+        livenessProbe:
+          initialDelaySeconds: 20
+          failureThreshold: 3
+          successThreshold: 1
+          periodSeconds: 5
+          timeoutSeconds: 1
+          httpGet:
+            path: /
+            port: 80
+        resources:
+          requests:
+            cpu: 100m
+            memory: 50Mi
+          limits:
+            cpu: 300m
+            memory: 300Mi
+        volumeMounts:
+          - name: config
+            mountPath: /etc/nginx/conf.d/
+      volumes:
+      - name: config
+        configMap: 
+          name: configmap-template
