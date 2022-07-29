@@ -62,7 +62,12 @@ spec:
         volumeMounts:
           - name: config
             mountPath: /etc/nginx/conf.d/
+          - name: pvc-t
+            mountPath: /app/mnt-pvc
       volumes:
       - name: config
         configMap: 
           name: configmap-template
+      - name: pvc-t
+        persistentVolumeClaim:
+          claimName: pvc-template
